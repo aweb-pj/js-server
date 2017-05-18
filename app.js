@@ -8,6 +8,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const multer = require('multer')
+const morgan = require('morgan')
 
 const storage = multer.diskStorage({
   destination: 'material',
@@ -29,6 +30,7 @@ const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
+app.use(morgan('dev'))
 
 app.get('/tree', (req, res) => {
   res.send(db.get('tree').value())
@@ -39,8 +41,7 @@ app.post('/tree', (req, res) => {
   let clientNodesKeys =  req.body.nodesKeys
   let shouldAddNodesKeys = _.difference(clientNodesKeys, serverNodesKeys)
   let shouldDeleteNodesKeys = _.difference(serverNodesKeys, clientNodesKeys)
-  console.log(shouldAddNodesKeys)
-    console.log(shouldDeleteNodesKeys)
+
   _.forEach(shouldDeleteNodesKeys, (key) => {
     db.get('nodes').unset(key).write()
   })
