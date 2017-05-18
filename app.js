@@ -9,6 +9,8 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const multer = require('multer')
 const morgan = require('morgan')
+const Promise = require('bluebird')
+const fs = Promise.promisifyAll(require('fs'))
 
 const storage = multer.diskStorage({
   destination: 'material',
@@ -99,6 +101,25 @@ app.get('/node/:nodeId/material/:materialName', (req, res) => {
   } else {
     res.sendStatus(404)
   }
+})
+
+app.delete('/node/:nodeId/material/:materialName', (req, res) => {
+  let path = _.join(['nodes', req.params.nodeId, 'material'], '.')
+  if (db.has(path).value()) {
+    let materialIndex = _.findIndex(db.get(path).value(), (o) => {return o === req.params.materialName})
+    if (materialIndex !== -1) {
+      fs.unlinkAsync(_.join(['material', req.params.materialName], '/')).then(() => {
+        db.get(path).remove((materialName) => {return materialName === req.params.materialName}).write()
+        res.sendStatus(204)
+      }).catch((error) => {
+        res.sendStatus(403)
+      })
+    } else {
+      res.sendStatus(403)
+    }
+  } else {
+    res.sendStatus(403)
+  }  
 })
 
 app.post('/node/:nodeId/material', upload.single('file'), (req, res) => {
