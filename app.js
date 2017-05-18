@@ -90,6 +90,29 @@ app.get('/node/:nodeId/material', (req, res) => {
   }
 })
 
+app.post('/node/:nodeId/material', upload.single('file'), (req, res) => {
+  let path = _.join(['nodes', req.params.nodeId], '.')
+  if (db.has(path).value()) {
+    if (!db.get(path).has('material').value()) {
+      db.get(path).set('material', []).write()
+    }
+    db.get(path).get('material').push(req.file.filename).write()
+    res.sendStatus(200)
+  } else {
+    res.sendStatus(403)
+  }  
+})
+
+app.put('/node/:nodeId/material', (req, res) => {
+  let path = _.join(['nodes', req.params.nodeId, 'material'], '.')
+  if (db.has(path).value()) {
+    db.get(path).assign(req.body.material).write()
+    res.sendStatus(200)
+  } else {
+    res.sendStatus(404)
+  }
+})
+
 app.get('/node/:nodeId/material/:materialName', (req, res) => {
   let path = _.join(['nodes', req.params.nodeId, 'material'], '.')
   if (db.has(path).value()) {
@@ -122,18 +145,7 @@ app.delete('/node/:nodeId/material/:materialName', (req, res) => {
   }  
 })
 
-app.post('/node/:nodeId/material', upload.single('file'), (req, res) => {
-  let path = _.join(['nodes', req.params.nodeId], '.')
-  if (db.has(path).value()) {
-    if (!db.get(path).has('material').value()) {
-      db.get(path).set('material', []).write()
-    }
-    db.get(path).get('material').push(req.file.filename).write()
-    res.sendStatus(200)
-  } else {
-    res.sendStatus(403)
-  }  
-})
+
 
 app.listen(1234, function () {
   console.log('app listen on port 1234!')
