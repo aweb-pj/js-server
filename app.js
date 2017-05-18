@@ -74,7 +74,25 @@ app.post('/node/:nodeId/homework', (req, res) => {
     if (db.get(path).has('homework').value()) {
       db.get(path).unset('homework').write()
     }
+    if (db.get(path).has('answer').value()) {
+      db.get(path).unset('answer').write()
+    }
     db.get(path).set('homework', req.body).write()
+    db.get(path).set('answer', {}).write()
+    res.sendStatus(200)
+  } else {
+    res.sendStatus(403)
+  }
+})
+
+/* student part. needs refactor */
+app.post('/node/:nodeId/answer/:studentId/', (req, res) => {
+  let path = _.join(['nodes', req.params.nodeId, 'answer'], '.')
+  if (db.has(path).value()) {
+    if (db.get(path).has(req.params.studentId).value()) {
+      db.get(path).unset(req.params.studentId).write()
+    }
+    db.get(path).set(req.params.studentId, req.body.answer).write()
     res.sendStatus(200)
   } else {
     res.sendStatus(403)
@@ -144,6 +162,7 @@ app.delete('/node/:nodeId/material/:materialName', (req, res) => {
     res.sendStatus(403)
   }  
 })
+
 
 
 
