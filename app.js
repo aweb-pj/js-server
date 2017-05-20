@@ -23,7 +23,7 @@ const upload = multer({storage: storage})
 
 db.defaults(
   {
-    tree: {}, 
+    tree: {},
     nodes: {}
   }).write()
 
@@ -40,7 +40,7 @@ app.get('/tree', (req, res) => {
 
 app.post('/tree', (req, res) => {
   let serverNodesKeys = _.keys(db.get('nodes').value())
-  let clientNodesKeys =  req.body.nodesKeys
+  let clientNodesKeys = req.body.nodesKeys
   let shouldAddNodesKeys = _.difference(clientNodesKeys, serverNodesKeys)
   let shouldDeleteNodesKeys = _.difference(serverNodesKeys, clientNodesKeys)
 
@@ -86,7 +86,7 @@ app.post('/node/:nodeId/homework', (req, res) => {
 })
 
 /* student part. needs refactor */
-app.post('/node/:nodeId/answer/:studentId/', (req, res) => {
+app.post('/node/:nodeId/answer/:studentId', (req, res) => {
   let path = _.join(['nodes', req.params.nodeId, 'answer'], '.')
   if (db.has(path).value()) {
     if (db.get(path).has(req.params.studentId).value()) {
@@ -97,6 +97,40 @@ app.post('/node/:nodeId/answer/:studentId/', (req, res) => {
   } else {
     res.sendStatus(403)
   }
+})
+
+app.get('/stat', (req, res) => {
+  let result = {}
+  _.forEach(db.get('nodes').value(), (node, nodeId) => {
+    if (_.has(node, 'homework.questions')) {
+      let totalAccuracys = []
+
+      _.forEach(_.get(node, 'homework.questions'), (question, questionIndex) => {
+        if (question.choice) {
+          if (_.has(node, 'answer')) {
+            let answers = _.get(node, 'answer')
+            let correct = 0
+            let peopleCount = _.size(_.get(node, 'answer'))
+            let accuracy = 0
+            _.forEach(answers, (answer, studentId) => {
+              if (answer[questionIndex] === question.answer) {
+                console.log({studentId: studentId, questionIndex: questionIndex, answer: question.answer})
+                correct += 1
+                console.log({previous: correct - 1, current: correct})
+              }
+            })
+            // console.log({correct, questionCount})
+            accuracy = correct / peopleCount
+            // console.log(accuracy)
+            totalAccuracys.push(accuracy)
+          }
+        }
+      })
+      let totalAccuracyForCurrentNode = _.sum(totalAccuracys) / totalAccuracys.length
+      result[nodeId] = totalAccuracyForCurrentNode
+    }
+  })
+  res.send(result)
 })
 
 app.get('/node/:nodeId/material', (req, res) => {
@@ -118,7 +152,7 @@ app.post('/node/:nodeId/material', upload.single('file'), (req, res) => {
     res.sendStatus(200)
   } else {
     res.sendStatus(403)
-  }  
+  }
 })
 
 app.put('/node/:nodeId/material', (req, res) => {
@@ -134,8 +168,8 @@ app.put('/node/:nodeId/material', (req, res) => {
 app.get('/node/:nodeId/material/:materialName', (req, res) => {
   let path = _.join(['nodes', req.params.nodeId, 'material'], '.')
   if (db.has(path).value()) {
-    if (_.findIndex(db.get(path).value(), (o) => {return o === req.params.materialName}) !== -1) {
-      res.sendFile(_.join(['material', req.params.materialName], '/'),  { root: __dirname})      
+    if (_.findIndex(db.get(path).value(), (o) => { return o === req.params.materialName }) !== -1) {
+      res.sendFile(_.join(['material', req.params.materialName], '/'), { root: __dirname})
     } else {
       res.sendStatus(404)
     }
@@ -147,10 +181,10 @@ app.get('/node/:nodeId/material/:materialName', (req, res) => {
 app.delete('/node/:nodeId/material/:materialName', (req, res) => {
   let path = _.join(['nodes', req.params.nodeId, 'material'], '.')
   if (db.has(path).value()) {
-    let materialIndex = _.findIndex(db.get(path).value(), (o) => {return o === req.params.materialName})
+    let materialIndex = _.findIndex(db.get(path).value(), (o) => { return o === req.params.materialName })
     if (materialIndex !== -1) {
       fs.unlinkAsync(_.join(['material', req.params.materialName], '/')).then(() => {
-        db.get(path).remove((materialName) => {return materialName === req.params.materialName}).write()
+        db.get(path).remove((materialName) => { return materialName === req.params.materialName }).write()
         res.sendStatus(204)
       }).catch((error) => {
         res.sendStatus(403)
@@ -160,11 +194,8 @@ app.delete('/node/:nodeId/material/:materialName', (req, res) => {
     }
   } else {
     res.sendStatus(403)
-  }  
+  }
 })
-
-
-
 
 app.listen(1234, function () {
   console.log('app listen on port 1234!')
