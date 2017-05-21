@@ -114,14 +114,13 @@ app.get('/stat', (req, res) => {
             let accuracy = 0
             _.forEach(answers, (answer, studentId) => {
               if (answer[questionIndex] === question.answer) {
-                console.log({studentId: studentId, questionIndex: questionIndex, answer: question.answer})
+                // console.log({studentId: studentId, questionIndex: questionIndex, answer: question.answer})
                 correct += 1
-                console.log({previous: correct - 1, current: correct})
+                // console.log({previous: correct - 1, current: correct})
               }
             })
-            // console.log({correct, questionCount})
+
             accuracy = correct / peopleCount
-            // console.log(accuracy)
             totalAccuracys.push(accuracy)
           }
         }
