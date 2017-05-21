@@ -99,6 +99,19 @@ app.post('/node/:nodeId/answer/:studentId', (req, res) => {
   }
 })
 
+app.get('/node/:nodeId/answer/:studentId/status', (req, res) => {
+  let path = _.join(['nodes', req.params.nodeId, 'answer'], '.')
+  if (db.has(path).value()) {
+    if (db.get(path).has(req.params.studentId).value()) {
+      res.send({status: true})
+    } else {
+      res.send({status: false})
+    }
+  } else {
+    res.sendStatus({status: false})
+  }
+})
+
 app.get('/stat', (req, res) => {
   let result = {}
   _.forEach(db.get('nodes').value(), (node, nodeId) => {
