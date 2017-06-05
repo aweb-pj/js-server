@@ -49,6 +49,10 @@ app.get('/tree/:treeId', (req, res) => {
 
 app.post('/tree', (req, res) => {
   let treeId = req.body.treeId
+  if (!db.has(reversedPath('nodes', treeId)).value()) {
+    db.set(reversedPath('nodes', treeId), {}).write()
+  }
+
   let serverNodesKeys = _.keys(db.get(reversedPath('nodes', treeId)).value())
   let clientNodesKeys = req.body.nodesKeys
   let shouldAddNodesKeys = _.difference(clientNodesKeys, serverNodesKeys)
