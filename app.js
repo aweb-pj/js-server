@@ -139,7 +139,7 @@ app.get('/tree/:treeId/node/:nodeId/answer/:studentId/status', (req, res) => {
       res.send({status: false})
     }
   } else {
-    res.sendStatus({status: false})
+    res.sendStatus(404)
   }
 })
 
