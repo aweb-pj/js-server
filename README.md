@@ -38,7 +38,7 @@ fail: 404
 
 GET '/tree/:treeId/stat'
 success: {root: {correct: 3, total: 5} ...}
-fail or doesn't exist: {}
+fail: {}
 
 GET '/tree/:treeId/node/:nodeId/material'
 success: ['filename1' ...]
