@@ -1,0 +1,153 @@
+{
+  "meta": {
+    "name": "jsMind",
+    "author": "hizzgdev@163.com",
+    "version": "0.4.3"
+  },
+  "format": "node_tree",
+  "data": {
+    "id": "root",
+    "topic": "网络虚拟环境",
+    "expanded": true,
+    "background-color": "rgb(44, 157, 76)",
+    "foreground-color": "black",
+    "show-stat": false,
+    "stat-color": "hsl(0, 100%, 50%)",
+    "children": [
+      {
+        "id": "c2dc3c6a12d0f3ba",
+        "topic": "概述",
+        "expanded": false,
+        "direction": "right",
+        "foreground-color": "black",
+        "children": [
+          {
+            "id": "c2dc4dfa96b36d1d",
+            "topic": "概念与特征",
+            "expanded": true,
+            "foreground-color": "black"
+          },
+          {
+            "id": "c2dc642c1f2b4744",
+            "topic": "各个领域中的应用",
+            "expanded": true,
+            "foreground-color": "black"
+          },
+          {
+            "id": "c2dc6876277e0465",
+            "topic": "发展历程",
+            "expanded": true,
+            "foreground-color": "black"
+          }
+        ]
+      },
+      {
+        "id": "c2dc43481d9ad749",
+        "topic": "计算机科学问题",
+        "expanded": true,
+        "direction": "left",
+        "foreground-color": "rgba(0, 0, 0, 1)",
+        "children": [
+          {
+            "id": "c2dd12e12cc6cbf2",
+            "topic": "构建NVE的经典问题",
+            "expanded": true,
+            "foreground-color": "black",
+            "children": [
+              {
+                "id": "c66afa0a1ca58e73",
+                "topic": "新结点",
+                "expanded": true,
+                "children": [
+                  {
+                    "id": "c66aff1016aa4a99",
+                    "topic": "新结点",
+                    "expanded": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "c2dd17642282b20a",
+            "topic": "智能虚拟环境相关技术",
+            "expanded": true,
+            "foreground-color": "black"
+          },
+          {
+            "id": "c2dd2257a25ebeba",
+            "topic": "应用相关：大数据等",
+            "expanded": true,
+            "foreground-color": "black"
+          },
+          {
+            "id": "c2dd2693a170df23",
+            "topic": "一个典型的NVE构建实例",
+            "expanded": true,
+            "foreground-color": "black"
+          }
+        ]
+      },
+      {
+        "id": "c2dc48731b777d50",
+        "topic": "社会人文问题",
+        "expanded": true,
+        "direction": "left",
+        "foreground-color": "black",
+        "children": [
+          {
+            "id": "c2dcfb8da6cf5661",
+            "topic": "哲思",
+            "expanded": true,
+            "foreground-color": "black"
+          },
+          {
+            "id": "c2dd069bb3315b60",
+            "topic": "生理与心理",
+            "expanded": true,
+            "foreground-color": "black"
+          },
+          {
+            "id": "c2dd0ad8b609ffd4",
+            "topic": "社会学",
+            "expanded": true,
+            "foreground-color": "black"
+          },
+          {
+            "id": "c2dd0d37abaf13cd",
+            "topic": "伦理与法律",
+            "expanded": true,
+            "foreground-color": "black"
+          },
+          {
+            "id": "c2dd0f483f1214ec",
+            "topic": "政治与经济",
+            "expanded": true,
+            "foreground-color": "black"
+          }
+        ]
+      },
+      {
+        "id": "c2dc3fb7a9ca4cc9",
+        "topic": "支撑技术",
+        "expanded": false,
+        "direction": "right",
+        "foreground-color": "black",
+        "children": [
+          {
+            "id": "c2dc93d424b0ab0b",
+            "topic": "互联网与Web",
+            "expanded": true,
+            "foreground-color": "black"
+          },
+          {
+            "id": "c2dc965096dc102c",
+            "topic": "虚拟现实",
+            "expanded": true,
+            "foreground-color": "black"
+          }
+        ]
+      }
+    ]
+  }
+}

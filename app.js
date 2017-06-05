@@ -15,7 +15,7 @@ const fs = Promise.promisifyAll(require('fs'))
 const storage = multer.diskStorage({
   destination: 'material',
   filename: function (req, file, callback) {
-    callback(null, _.join([req.params.nodeId, file.originalname.replace(/\s+/g, '_').toLowerCase()], '_'))
+    callback(null, _.join([req.params.treeId, req.params.nodeId, file.originalname.replace(/\s+/g, '_').toLowerCase()], '_'))
   }
 })
 
@@ -34,33 +34,60 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(morgan('dev'))
 
-app.get('/tree', (req, res) => {
-  res.send(db.get('tree').value())
+const reversedPath = (...args) => (
+  _.join(args, '.')
+)
+
+app.get('/tree/:treeId', (req, res) => {
+  if (db.has(reversedPath('tree', req.params.treeId)).value()) {
+    res.send(db.get(reversedPath('tree', req.params.treeId)).value())
+  } else {
+    res.sendStatus(404)
+  }
 })
 
+
 app.post('/tree', (req, res) => {
-  let serverNodesKeys = _.keys(db.get('nodes').value())
+  let treeId = req.body.treeId
+  let serverNodesKeys = _.keys(db.get(reversedPath('nodes', treeId)).value())
   let clientNodesKeys = req.body.nodesKeys
   let shouldAddNodesKeys = _.difference(clientNodesKeys, serverNodesKeys)
   let shouldDeleteNodesKeys = _.difference(serverNodesKeys, clientNodesKeys)
 
   _.forEach(shouldDeleteNodesKeys, (key) => {
-    db.get('nodes').unset(key).write()
+    db.get(reversedPath('nodes', treeId)).unset(key).write()
   })
   _.forEach(shouldAddNodesKeys, (key) => {
-    db.get('nodes').set(key, {}).write()
+    db.get(reversedPath('nodes', treeId)).set(key, {}).write()
   })
-  db.unset('tree').write()
-  db.set('tree', req.body.data).write()
+  db.unset(reversedPath('tree', treeId)).write()
+  db.set(reversedPath('tree', treeId), req.body.data).write()
   res.sendStatus(200)
 })
 
-app.get('/node', (req, res) => {
-  res.send(db.get('nodes').value())
+// app.post('/tree', (req, res) => {
+//   let serverNodesKeys = _.keys(db.get('nodes').value())
+//   let clientNodesKeys = req.body.nodesKeys
+//   let shouldAddNodesKeys = _.difference(clientNodesKeys, serverNodesKeys)
+//   let shouldDeleteNodesKeys = _.difference(serverNodesKeys, clientNodesKeys)
+//
+//   _.forEach(shouldDeleteNodesKeys, (key) => {
+//     db.get('nodes').unset(key).write()
+//   })
+//   _.forEach(shouldAddNodesKeys, (key) => {
+//     db.get('nodes').set(key, {}).write()
+//   })
+//   db.unset('tree').write()
+//   db.set('tree', req.body.data).write()
+//   res.sendStatus(200)
+// })
+
+app.get('/tree/:treeId/node/', (req, res) => {
+  res.send(db.get(reversedPath('nodes', req.params.treeId)).value())
 })
 
-app.get('/node/:nodeId/homework', (req, res) => {
-  let path = _.join(['nodes', req.params.nodeId, 'homework'], '.')
+app.get('/tree/:treeId/node/:nodeId/homework', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'homework'], '.')
   if (db.has(path).value()) {
     res.send(db.get(path).value())
   } else {
@@ -68,8 +95,8 @@ app.get('/node/:nodeId/homework', (req, res) => {
   }
 })
 
-app.post('/node/:nodeId/homework', (req, res) => {
-  let path = _.join(['nodes', req.params.nodeId], '.')
+app.post('/tree/:treeId/node/:nodeId/homework', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId], '.')
   if (db.has(path).value()) {
     if (db.get(path).has('homework').value()) {
       db.get(path).unset('homework').write()
@@ -86,8 +113,8 @@ app.post('/node/:nodeId/homework', (req, res) => {
 })
 
 /* student part. needs refactor */
-app.post('/node/:nodeId/answer/:studentId', (req, res) => {
-  let path = _.join(['nodes', req.params.nodeId, 'answer'], '.')
+app.post('/tree/:treeId/node/:nodeId/answer/:studentId', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'answer'], '.')
   if (db.has(path).value()) {
     if (db.get(path).has(req.params.studentId).value()) {
       db.get(path).unset(req.params.studentId).write()
@@ -99,8 +126,8 @@ app.post('/node/:nodeId/answer/:studentId', (req, res) => {
   }
 })
 
-app.get('/node/:nodeId/answer/:studentId/status', (req, res) => {
-  let path = _.join(['nodes', req.params.nodeId, 'answer'], '.')
+app.get('/tree/:treeId/node/:nodeId/answer/:studentId/status', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'answer'], '.')
   if (db.has(path).value()) {
     if (db.get(path).has(req.params.studentId).value()) {
       res.send({status: true})
@@ -112,9 +139,9 @@ app.get('/node/:nodeId/answer/:studentId/status', (req, res) => {
   }
 })
 
-app.get('/stat', (req, res) => {
+app.get('/tree/:treeId/stat', (req, res) => {
   let result = {}
-  _.forEach(db.get('nodes').value(), (node, nodeId) => {
+  _.forEach(db.get(reversedPath('nodes', req.params.treeId)).value(), (node, nodeId) => {
     if (_.has(node, 'homework.questions')) {
       let totalAccuracys = []
 
@@ -133,20 +160,20 @@ app.get('/stat', (req, res) => {
               }
             })
 
-            accuracy = correct / peopleCount
+            accuracy = {correct: correct, total: peopleCount}
             totalAccuracys.push(accuracy)
           }
         }
       })
-      let totalAccuracyForCurrentNode = _.sum(totalAccuracys) / totalAccuracys.length
-      result[nodeId] = totalAccuracyForCurrentNode
+      // let totalAccuracyForCurrentNode = _.sum(totalAccuracys) / totalAccuracys.length
+      result[nodeId] = _.cloneDeep(totalAccuracys)
     }
   })
   res.send(result)
 })
 
-app.get('/node/:nodeId/material', (req, res) => {
-  let path = _.join(['nodes', req.params.nodeId, 'material'], '.')
+app.get('/tree/:treeId/node/:nodeId/material', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'material'], '.')
   if (db.has(path).value()) {
     res.send(db.get(path).value())
   } else {
@@ -154,8 +181,8 @@ app.get('/node/:nodeId/material', (req, res) => {
   }
 })
 
-app.post('/node/:nodeId/material', upload.single('file'), (req, res) => {
-  let path = _.join(['nodes', req.params.nodeId], '.')
+app.post('/tree/:treeId/node/:nodeId/material', upload.single('file'), (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId], '.')
   if (db.has(path).value()) {
     if (!db.get(path).has('material').value()) {
       db.get(path).set('material', []).write()
@@ -167,8 +194,8 @@ app.post('/node/:nodeId/material', upload.single('file'), (req, res) => {
   }
 })
 
-app.put('/node/:nodeId/material', (req, res) => {
-  let path = _.join(['nodes', req.params.nodeId, 'material'], '.')
+app.put('/tree/:treeId/node/:nodeId/material', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'material'], '.')
   if (db.has(path).value()) {
     db.get(path).assign(req.body.material).write()
     res.sendStatus(200)
@@ -177,8 +204,8 @@ app.put('/node/:nodeId/material', (req, res) => {
   }
 })
 
-app.get('/node/:nodeId/material/:materialName', (req, res) => {
-  let path = _.join(['nodes', req.params.nodeId, 'material'], '.')
+app.get('/tree/:treeId/node/:nodeId/material/:materialName', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'material'], '.')
   if (db.has(path).value()) {
     if (_.findIndex(db.get(path).value(), (o) => { return o === req.params.materialName }) !== -1) {
       res.sendFile(_.join(['material', req.params.materialName], '/'), { root: __dirname})
@@ -190,8 +217,8 @@ app.get('/node/:nodeId/material/:materialName', (req, res) => {
   }
 })
 
-app.delete('/node/:nodeId/material/:materialName', (req, res) => {
-  let path = _.join(['nodes', req.params.nodeId, 'material'], '.')
+app.delete('/tree/:treeId/node/:nodeId/material/:materialName', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'material'], '.')
   if (db.has(path).value()) {
     let materialIndex = _.findIndex(db.get(path).value(), (o) => { return o === req.params.materialName })
     if (materialIndex !== -1) {
