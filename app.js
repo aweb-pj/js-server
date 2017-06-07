@@ -38,7 +38,11 @@ const reversedPath = (...args) => (
   _.join(args, '.')
 )
 
-app.get('/tree', (req, res) => {
+app.get('/db', (req, res) => {
+  res.send(db.getState())
+})
+
+.app.get('/tree', (req, res) => {
   res.send(_.keysIn(db.get('tree').value()))
 })
 
@@ -50,9 +54,11 @@ app.get('/tree/:treeId', (req, res) => {
   }
 })
 
-
 app.post('/tree', (req, res) => {
   let treeId = req.body.treeId
+  if (_.isEmpty(treeId)) {
+    req.sendStatus(400)
+  }
   if (!db.has(reversedPath('nodes', treeId)).value()) {
     db.set(reversedPath('nodes', treeId), {}).write()
   }
