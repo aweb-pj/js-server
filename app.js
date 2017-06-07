@@ -43,7 +43,7 @@ app.get('/db', (req, res) => {
 })
 
 app.get('/tree', (req, res) => {
-  res.send(_.keysIn(db.get('tree').value()))
+  res.send(_.keys(db.get('tree').value()))
 })
 
 app.get('/tree/:treeId', (req, res) => {
@@ -57,7 +57,8 @@ app.get('/tree/:treeId', (req, res) => {
 app.post('/tree', (req, res) => {
   let treeId = req.body.treeId
   if (_.isEmpty(treeId)) {
-    req.sendStatus(400)
+    res.sendStatus(400)
+    return
   }
   if (!db.has(reversedPath('nodes', treeId)).value()) {
     db.set(reversedPath('nodes', treeId), {}).write()
