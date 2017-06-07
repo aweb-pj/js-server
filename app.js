@@ -42,7 +42,7 @@ app.get('/db', (req, res) => {
   res.send(db.getState())
 })
 
-.app.get('/tree', (req, res) => {
+app.get('/tree', (req, res) => {
   res.send(_.keysIn(db.get('tree').value()))
 })
 
