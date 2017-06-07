@@ -38,6 +38,10 @@ const reversedPath = (...args) => (
   _.join(args, '.')
 )
 
+app.get('/tree', (req, res) => {
+  res.send(_.keysIn(db.get('tree').value()))
+})
+
 app.get('/tree/:treeId', (req, res) => {
   if (db.has(reversedPath('tree', req.params.treeId)).value()) {
     res.send(db.get(reversedPath('tree', req.params.treeId)).value())
