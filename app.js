@@ -174,8 +174,11 @@ app.get('/tree/:treeId/stat', (req, res) => {
                 // console.log({previous: correct - 1, current: correct})
               }
             })
-
-            accuracy = {correct: correct, total: peopleCount}
+            if (peopleCount !== 0) {
+              accuracy = {correct: correct, total: peopleCount, rate: correct / peopleCount}
+            } else {
+              accuracy = {correct: correct, total: peopleCount, rate: 0}
+            }
             totalAccuracys.push(accuracy)
           }
         }
