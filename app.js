@@ -23,6 +23,8 @@ const upload = multer({storage: storage})
 
 db.defaults(
   {
+    users: {},
+    courses: {},
     tree: {},
     nodes: {}
   }).write()
@@ -42,6 +44,112 @@ app.get('/db', (req, res) => {
   res.send(db.getState())
 })
 
+app.post('/register', (req, res) => {
+  let username = req.body.username
+  let password = req.body.password
+  let type = req.body.type
+  if (db.get('users').has(username).value()) {
+    res.sendStatus(409)
+  } else {
+    db.get('users').set(username, {password: password, type: type}).write()
+    res.sendStatus(200)
+  }
+})
+
+app.post('/login', (req, res) => {
+  let username = req.body.username
+  let password = req.body.password
+  let type = req.body.type
+  let hasThisUser = db.get('users').has(username).value()
+  if (!hasThisUser) {
+    res.sendStatus(404)
+    return
+  }
+  let userInDB = db.get('users').get(username).value()
+  if (password === userInDB.password && type === userInDB.type) {
+    res.sendStatus(200)
+  } else {
+    res.sendStatus(401)
+  }
+})
+
+app.post('/user/:username/course', (req, res) => {
+  let username = req.params.username
+  let courseId = req.body.courseId
+  let courseName = req.body.courseName
+
+  if (!db.get('users').has(username).value()) {
+    res.sendStatus(401)
+    return
+  }
+  if (db.get('users').get(username).value().type !== 'teacher') {
+    res.sendStatus(401)
+    return
+  }
+  if (db.get('courses').has(courseId).value()) {
+    res.sendStatus(401)
+    return
+  }
+  db.get('courses').set(courseId, {courseName: courseName, stakeholders:[username], trees: []}).write()
+  res.sendStatus(200)
+})
+
+app.get('/user/:username/course', (req, res) => {
+  let username = req.params.username
+  if (!db.get('users').has(username).value()) {
+    res.sendStatus(401)
+    return
+  }
+  let courses = db.get('courses').value()
+  if (_.size(courses) === 0) {
+    res.send([])
+    return
+  }
+  let coursesOfUser = []
+  _.forEach(courses, (course, courseId) => {
+    if (_.findIndex(course.stakeholders, (holder) => {
+        return holder === username
+      } ) !== -1) {
+      let clonedCourse = _.cloneDeep(course)
+      clonedCourse.courseId = courseId
+      coursesOfUser.push(clonedCourse)
+    }
+  })
+  res.send(coursesOfUser)
+})
+
+app.post('/course/:courseId/tree', (req, res) => {
+  let courseId = req.params.courseId
+  if (!db.get('courses').has(courseId).value()) {
+    res.send(401)
+    return
+  }
+  let treesOfCourse = db.get('courses').get(courseId).get('trees').value()
+  if (_.findIndex(treesOfCourse, (treeId) => {
+    return treeId === req.body.treeId
+    }) === -1) {
+    db.get('courses').get(courseId).get('trees').push(req.body.treeId).write()
+    treePostHandler(req, res)
+  }
+})
+
+app.get('/course/:courseId/tree', (req, res) => {
+  if (!db.get('courses').has(req.params.courseId).value()) {
+    res.send(401)
+  return
+  }
+  res.send(db.get('courses').get(req.params.courseId).get('trees').value())
+})
+
+app.get('course/:courseId', (req, res) => {
+  if (!db.get('courses').has(req.params.courseId).value()) {
+    res.send(401)
+    return
+  }
+  res.send(db.get('courses').get(req.params.courseId).value())
+})
+
+
 app.get('/tree', (req, res) => {
   res.send(_.keys(db.get('tree').value()))
 })
@@ -54,7 +162,7 @@ app.get('/tree/:treeId', (req, res) => {
   }
 })
 
-app.post('/tree', (req, res) => {
+function treePostHandler (req, res) {
   let treeId = req.body.treeId
   if (_.isEmpty(treeId)) {
     res.sendStatus(400)
@@ -78,7 +186,9 @@ app.post('/tree', (req, res) => {
   db.unset(reversedPath('tree', treeId)).write()
   db.set(reversedPath('tree', treeId), req.body.data).write()
   res.sendStatus(200)
-})
+}
+
+app.post('/tree', treePostHandler)
 
 // app.post('/tree', (req, res) => {
 //   let serverNodesKeys = _.keys(db.get('nodes').value())
