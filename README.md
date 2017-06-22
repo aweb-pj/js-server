@@ -57,6 +57,7 @@ success:     {
     }
 fail: 401
 
+------------------------------
 
 GET '/tree/:treeId'
 success: jsMind data
