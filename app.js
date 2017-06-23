@@ -426,6 +426,26 @@ app.delete('/tree/:treeId/node/:nodeId/material/:materialName', (req, res) => {
   }
 })
 
+const resourceStorage = multer.diskStorage({
+  destination: 'resource',
+  filename: function (req, file, callback) {
+    callback(null, _.join([req.params.treeId, req.params.nodeId, file.originalname.replace(/\s+/g, '_').toLowerCase()], '_'))
+  }
+})
+
+const resourceUpload = multer({storage: resourceStorage})
+
+
+app.post('/tree/:treeId/node/:nodeId/resource', resourceUpload.single('file'), (req, res) => {
+  console.log(req)
+  // let path = _.join(['nodes', req.params.treeId, req.params.nodeId], '.')
+  // if (db.has(path).value()) {
+  //   if (!db.get(path).has('material').value()) {
+  //     db.get(path).set('material', []).write()
+  //   }
+  //   db.get(path).get('material').push(req.file.filename).write()
+    res.sendStatus(200)
+})
 app.listen(1234, function () {
   console.log('app listen on port 1234!')
 })
