@@ -94,6 +94,58 @@ app.post('/user/:username/course', (req, res) => {
   res.sendStatus(200)
 })
 
+app.post('/course/:courseId/select', (req, res) => {
+  let username = req.body.username
+  let courseId = req.params.courseId
+  if (!db.get('users').has(username).value()) {
+    res.sendStatus(401)
+    return
+  }
+  if (db.get('users').get(username).value().type !== 'student') {
+    res.sendStatus(401)
+  }
+  if (!db.get('courses').has(courseId).value()) {
+    res.sendStatus(401)
+    return
+  }
+  let stakeholdersOfCourse = db.get('courses').get(courseId).get('stakeholders')
+  if (_.findIndex(stakeholdersOfCourse.value(), (stakeholder) => {
+    return stakeholder === username
+    }) === -1) {
+    stakeholdersOfCourse.push(username).write()
+    res.sendStatus(200)
+    return
+  } else {
+    res.sendStatus(401)
+    return
+  }
+
+})
+
+app.get('/course', (req, res) => {
+  res.send(_.values(db.get('courses')))
+})
+
+app.get('/user/:username/selectable_courses', (req, res) => {
+  let courses = db.get('courses').value()
+  let courseArray = []
+  _.forEach(courses, (course, key) => {
+    if (_.findIndex(course.stakeholders, (stakeholder) => {
+      return stakeholder === req.params.username
+      }) === -1) {
+      let clonedCourse = _.cloneDeep(course)
+      try {
+        delete clonedCourse.stakeholders
+      } catch (e) {
+
+      }
+      clonedCourse.courseId = key
+      courseArray.push(clonedCourse)
+    }
+  })
+  res.send(courseArray)
+})
+
 app.get('/user/:username/course', (req, res) => {
   let username = req.params.username
   if (!db.get('users').has(username).value()) {
@@ -146,7 +198,7 @@ app.get('/course/:courseId/tree', (req, res) => {
   res.send(db.get('courses').get(req.params.courseId).get('trees').value())
 })
 
-app.get('course/:courseId', (req, res) => {
+app.get('/course/:courseId', (req, res) => {
   if (!db.get('courses').has(req.params.courseId).value()) {
     res.send(401)
     return
