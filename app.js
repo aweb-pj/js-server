@@ -543,12 +543,8 @@ app.post('/tree/:treeId/node/:nodeId/resource/link/delete', (req, res) => {
   if (db.has(path).value()) {
     let materialIndex = _.findIndex(db.get(path).value(), (o) => { return o === req.body.resource_link})
     if (materialIndex !== -1) {
-      fs.unlinkAsync(_.join(['resource_link', req.params.fileName], '/')).then(() => {
-        db.get(path).remove((o) => { return o === req.body.resource_link }).write()
-        res.sendStatus(204)
-      }).catch((error) => {
-        res.sendStatus(403)
-      })
+      db.get(path).remove((o) => { return o === req.body.resource_link }).write()
+      res.sendStatus(204)
     } else {
       res.sendStatus(403)
     }
