@@ -8,6 +8,27 @@ working backend server in JavaScript with Express and Lowdb.
 ```javascript
 PORT: 1234
 
+//选课相关
+
+POST '/course/:courseId/select'
+body: {username: 's1'}
+success: 200
+fail: 401
+//已经选了 or 是老师 or 课程不存在 or username 不存在 均不能选课
+
+GET '/course'
+//所有课程的所有信息
+success: [{"courseName":"course1","stakeholders":["a"],"trees":["t1"],"courseId":"c1"}]
+fail: //it should not fail
+
+GET '/user/:username/selectable_courses'
+//该学生能选课课程信息，信息不包括参与者(stakeholder)
+success: [{"courseName":"course1","trees":["t1"],"courseId":"c1"}]
+fail: //it should not fail
+
+------------------------------
+
+
 POST '/register'
 //type should be 'teacher' or 'student'
 body: {username: 'z1', password: '123', type: 'teacher'}
@@ -15,11 +36,12 @@ success: 200
 fail: 409
 
 POST '/login'
-body: {username: 'z1', password: '123'}
+body: {username: 'z1', password: '123', type: 'student'}
 success: 200
 fail: 401/404
 
 POST '/user/:username/course'
+//老师新建课程
 body: {courseId; 'c1', courseName: 'course'}
 success: 200
 fail: 200
