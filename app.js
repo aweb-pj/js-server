@@ -123,7 +123,13 @@ app.post('/course/:courseId/select', (req, res) => {
 })
 
 app.get('/course', (req, res) => {
-  res.send(_.values(db.get('courses')))
+  let courseArray = []
+  _.forEach(db.get('courses').value(), (course, key) => {
+      let clonedCourse = _.cloneDeep(course)
+      clonedCourse.courseId = key
+      courseArray.push(clonedCourse)
+  })
+  res.send(courseArray)
 })
 
 app.get('/user/:username/selectable_courses', (req, res) => {
@@ -137,7 +143,6 @@ app.get('/user/:username/selectable_courses', (req, res) => {
       try {
         delete clonedCourse.stakeholders
       } catch (e) {
-
       }
       clonedCourse.courseId = key
       courseArray.push(clonedCourse)
