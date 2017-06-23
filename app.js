@@ -121,7 +121,11 @@ app.get('/user/:username/course', (req, res) => {
 app.post('/course/:courseId/tree', (req, res) => {
   let courseId = req.params.courseId
   if (!db.get('courses').has(courseId).value()) {
-    res.send(401)
+    res.sendStatus(401)
+    return
+  }
+  if (_.isEmpty(req.body.treeId)) {
+    res.sendStatus(400)
     return
   }
   let treesOfCourse = db.get('courses').get(courseId).get('trees').value()
@@ -129,11 +133,12 @@ app.post('/course/:courseId/tree', (req, res) => {
     return treeId === req.body.treeId
     }) === -1) {
     db.get('courses').get(courseId).get('trees').push(req.body.treeId).write()
-    treePostHandler(req, res)
   }
+    return treePostHandler(req, res)
 })
 
 app.get('/course/:courseId/tree', (req, res) => {
+
   if (!db.get('courses').has(req.params.courseId).value()) {
     res.send(401)
   return
