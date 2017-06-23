@@ -8,6 +8,55 @@ working backend server in JavaScript with Express and Lowdb.
 ```javascript
 PORT: 1234
 
+//资源相关
+
+//文件
+GET '/tree/:treeId/node/:nodeId/resource/file'
+//获得所有资源文件列表
+success: [{url, description}...]
+fail: 404
+
+POST '/tree/:treeId/node/:nodeId/resource/file'
+//上传新资源文件
+body: {description: 'd'}
+success: 200
+fail: 403
+
+PUT '/tree/:treeId/node/:nodeId/resource/file'
+//拖拽调整顺序
+body: {resource_file: [ {url, description},  {}, ... ] }
+success: 200
+fail: 404
+
+GET '/tree/:treeId/node/:nodeId/resource/file/:fileName'
+success: file
+fail: 404
+
+DELETE '/tree/:treeId/node/:nodeId/resource/file/:fileName'
+success: 204
+fail: 403
+
+//链接
+GET '/tree/:treeId/node/:nodeId/resource/link'
+success: [{url, description}, {}...]
+fail: 404
+
+POST '/tree/:treeId/node/:nodeId/resource/link'
+body: { resource_link: {url, description} }
+success: 200
+fail: 403
+
+PUT '/tree/:treeId/node/:nodeId/resource/link'
+body: { resource_link: [ {url, description} ... ] }
+success: 200
+fail: 404
+
+POST '/tree/:treeId/node/:nodeId/resource/link/delete'
+body: { resource_link: {url, description} }
+success: 204
+fail: 403
+
+
 //选课相关
 
 POST '/course/:courseId/select'
