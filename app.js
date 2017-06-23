@@ -437,7 +437,7 @@ const resourceUpload = multer({storage: resourceStorage})
 
 
 app.post('/tree/:treeId/node/:nodeId/resource', resourceUpload.single('file'), (req, res) => {
-  res.send({body: req.body, query: req.query, file: req.file)
+  res.send({body: req.body, query: req.query, file: req.file})
   // let path = _.join(['nodes', req.params.treeId, req.params.nodeId], '.')
   // if (db.has(path).value()) {
   //   if (!db.get(path).has('material').value()) {
