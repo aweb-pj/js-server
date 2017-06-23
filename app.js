@@ -541,9 +541,9 @@ app.put('/tree/:treeId/node/:nodeId/resource/link', (req, res) => {
 app.post('/tree/:treeId/node/:nodeId/resource/link/delete', (req, res) => {
   let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'resource_link'], '.')
   if (db.has(path).value()) {
-    let materialIndex = _.findIndex(db.get(path).value(), (o) => { return o === req.body.resource_link})
+    let materialIndex = _.findIndex(db.get(path).value(), (o) => { return _.isEqual(o, req.body.resource_link) })
     if (materialIndex !== -1) {
-      db.get(path).remove((o) => { return o === req.body.resource_link }).write()
+      db.get(path).remove((o) => { return _.isEqual(o, req.body.resource_link) }).write()
       res.sendStatus(204)
     } else {
       res.sendStatus(403)
