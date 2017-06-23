@@ -8,6 +8,57 @@ working backend server in JavaScript with Express and Lowdb.
 ```javascript
 PORT: 1234
 
+POST '/register'
+//type should be 'teacher' or 'student'
+body: {username: 'z1', password: '123', type: 'teacher'}
+success: 200
+fail: 409
+
+POST '/login'
+body: {username: 'z1', password: '123'}
+success: 200
+fail: 401/404
+
+POST '/user/:username/course'
+body: {courseId; 'c1', courseName: 'course'}
+success: 200
+fail: 200
+
+GET '/user/:username/course'
+//stakeholers: 所有参与者，包括自己
+success: [
+    {
+        "courseName": "C1",
+        "stakeholders": [
+            "tu1"
+        ],
+        "trees": [],
+        "courseId": "c1"
+    }，
+    ...
+]
+fail: 401
+
+POST '/course/:courseId/tree'
+body: {courseId: 'c1', ... 其他和原来的 post '/tree'一样}
+
+GET  '/course/:courseId/tree'
+success: ['tree1', 'tree2' ...]
+fail: 401
+
+GET '/course/:courseId'
+success:     {
+        "courseName": "C1",
+        "stakeholders": [
+            "tu1"
+        ],
+        "trees": [],
+        "courseId": "c1"
+    }
+fail: 401
+
+------------------------------
+
 GET '/tree/:treeId'
 success: jsMind data
 fail: 404
