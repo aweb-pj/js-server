@@ -427,7 +427,7 @@ app.delete('/tree/:treeId/node/:nodeId/material/:materialName', (req, res) => {
 })
 
 const resourceStorage = multer.diskStorage({
-  destination: 'resource',
+  destination: 'resource_file',
   filename: function (req, file, callback) {
     callback(null, _.join([req.params.treeId, req.params.nodeId, file.originalname.replace(/\s+/g, '_').toLowerCase()], '_'))
   }
@@ -436,15 +436,132 @@ const resourceStorage = multer.diskStorage({
 const resourceUpload = multer({storage: resourceStorage})
 
 
-app.post('/tree/:treeId/node/:nodeId/resource', resourceUpload.single('file'), (req, res) => {
-  res.send({body: req.body, query: req.query, file: req.file})
-  // let path = _.join(['nodes', req.params.treeId, req.params.nodeId], '.')
-  // if (db.has(path).value()) {
-  //   if (!db.get(path).has('material').value()) {
-  //     db.get(path).set('material', []).write()
-  //   }
-  //   db.get(path).get('material').push(req.file.filename).write()
+/*****resource file********/
+
+app.get('/tree/:treeId/node/:nodeId/resource/file', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'resource_file'], '.')
+  if (db.has(path).value()) {
+    res.send(db.get(path).value())
+  } else {
+    res.sendStatus(404)
+  }
 })
+
+app.post('/tree/:treeId/node/:nodeId/resource/file', resourceUpload.single('file'), (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId], '.')
+  if (db.has(path).value()) {
+    if (!db.get(path).has('resource_file').value()) {
+      db.get(path).set('resource_file', []).write()
+    }
+    db.get(path).get('resource_file').push({url: _.join(['https://aweb.jtwang.me', 'tree', req.params.treeId, 'node', req.params.nodeId, 'resource', 'file', req.file.filename], '/'), description: req.body.description}).write()
+    res.sendStatus(200)
+  } else {
+    res.sendStatus(403)
+  }
+})
+
+app.put('/tree/:treeId/node/:nodeId/resource/file', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'resource_file'], '.')
+  if (db.has(path).value()) {
+    db.get(path).assign(req.body.resource_file).write()
+    res.sendStatus(200)
+  } else {
+    res.sendStatus(404)
+  }
+})
+
+app.get('/tree/:treeId/node/:nodeId/resource/file/:fileName', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'resource_file'], '.')
+  if (db.has(path).value()) {
+    if (_.findIndex(db.get(path).value(), (o) => { return o.url === _.join(['https://aweb.jtwang.me', 'tree', req.params.treeId, 'node', req.params.nodeId, 'resource', 'file', req.params.fileName], '/') }) !== -1) {
+      res.sendFile(_.join(['resource_file', req.params.fileName], '/'), { root: __dirname})
+    } else {
+      res.sendStatus(404)
+    }
+  } else {
+    res.sendStatus(404)
+  }
+})
+
+app.delete('/tree/:treeId/node/:nodeId/resource/file/:fileName', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'resource_file'], '.')
+  if (db.has(path).value()) {
+    let materialIndex = _.findIndex(db.get(path).value(), (o) => { return o.url === _.join(['https://aweb.jtwang.me', 'tree', req.params.treeId, 'node', req.params.nodeId, 'resource', 'file', req.params.fileName], '/') })
+    if (materialIndex !== -1) {
+      fs.unlinkAsync(_.join(['resource_file', req.params.fileName], '/')).then(() => {
+        db.get(path).remove((file) => { return file.url === _.join(['https://aweb.jtwang.me', 'tree', req.params.treeId, 'node', req.params.nodeId, 'resource', 'file', req.params.fileName], '/') }).write()
+        res.sendStatus(204)
+      }).catch((error) => {
+        res.sendStatus(403)
+      })
+    } else {
+      res.sendStatus(403)
+    }
+  } else {
+    res.sendStatus(403)
+  }
+})
+
+
+/*****resource link********/
+
+app.get('/tree/:treeId/node/:nodeId/resource/link', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'resource_link'], '.')
+  if (db.has(path).value()) {
+    res.send(db.get(path).value())
+  } else {
+    res.sendStatus(404)
+  }
+})
+
+app.post('/tree/:treeId/node/:nodeId/resource/link', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId], '.')
+  if (db.has(path).value()) {
+    if (!db.get(path).has('resource_link').value()) {
+      db.get(path).set('resource_link', []).write()
+    }
+    db.get(path).get('resource_link').push(req.body.resource_link).write()
+    res.sendStatus(200)
+  } else {
+    res.sendStatus(403)
+  }
+})
+
+app.put('/tree/:treeId/node/:nodeId/resource/link', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'resource_link'], '.')
+  if (db.has(path).value()) {
+    db.get(path).assign(req.body.resource_link).write()
+    res.sendStatus(200)
+  } else {
+    res.sendStatus(404)
+  }
+})
+
+
+app.post('/tree/:treeId/node/:nodeId/resource/link/delete', (req, res) => {
+  let path = _.join(['nodes', req.params.treeId, req.params.nodeId, 'resource_link'], '.')
+  if (db.has(path).value()) {
+    let materialIndex = _.findIndex(db.get(path).value(), (o) => { return o === req.body.resource_link})
+    if (materialIndex !== -1) {
+      fs.unlinkAsync(_.join(['resource_link', req.params.fileName], '/')).then(() => {
+        db.get(path).remove((o) => { return o === req.body.resource_link }).write()
+        res.sendStatus(204)
+      }).catch((error) => {
+        res.sendStatus(403)
+      })
+    } else {
+      res.sendStatus(403)
+    }
+  } else {
+    res.sendStatus(403)
+  }
+})
+
+
+
+
+
+
 app.listen(1234, function () {
   console.log('app listen on port 1234!')
 })
