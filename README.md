@@ -189,6 +189,8 @@ success: ['filename1' ...]
 fail: 404
 
 POST '/tree/:treeId/node/:nodeId/material'
+//得到某结点
+
 success: 200
 fail: 403
 
