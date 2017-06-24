@@ -189,20 +189,22 @@ success: ['filename1' ...]
 fail: 404
 
 POST '/tree/:treeId/node/:nodeId/material'
-//得到某结点
-
+//上传课件到某结点
 success: 200
 fail: 403
 
 PUT '/tree/:treeId/node/:nodeId/material'
+//更新某结点课件列表（拖拽调整顺序需要）
 success: 200
 fail: 404
 
 GET '/tree/:treeId/node/:nodeId/material/:materialName'
+//得到某结点某课件文件
 success: file
 fail: 404
 
 DELETE '/tree/:treeId/node/:nodeId/material/:materialName'
+//删除某结点某课件
 success: 204
 fail: 403
 
